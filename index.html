@@ -819,7 +819,7 @@
         </div>
         <div class="logout-menu hidden" id="logout-menu">
           <button onclick="logout()">Disconnect Spotify</button>
-          <button onclick="resetToOnboarding()" class="danger">Reset Setup</button>
+          <button onclick="resetToOnboarding()">Change Client ID…</button>
         </div>
       </div>
     </div>
@@ -994,7 +994,7 @@ async function boot() {
 //  Onboarding Wizard
 // ════════════════════════════════════════════════
 let obStep = 1;
-const OB_TOTAL = 5;
+const OB_TOTAL = 4;
 
 // Steps are rendered as functions so template expressions evaluate at render time
 function getSteps() {
@@ -1090,9 +1090,10 @@ function getSteps() {
         </div>`,
     },
 
-    // Step 4 — Get Client ID
+    // Step 4 — Find & Paste Client ID (merged)
     {
-      title: 'Find Your Client ID',
+      title: 'Get Your Client ID',
+      nextLabel: 'Save & Connect Spotify →',
       illustration: `
         <div class="illustration" style="font-size:12px;text-align:left;">
           <div style="color:var(--text-muted);font-weight:600;margin-bottom:10px;">App Settings</div>
@@ -1105,26 +1106,18 @@ function getSteps() {
         <div class="instruction-list">
           <div class="instruction-item">
             <div class="step-num">1</div>
-            <div>Go to your new app on the Spotify Developer Dashboard.</div>
+            <div>In your Spotify app's dashboard, click <strong>Settings</strong>.</div>
           </div>
           <div class="instruction-item">
             <div class="step-num">2</div>
-            <div>Click <strong>Settings</strong> in the top right.</div>
+            <div>Copy your <strong>Client ID</strong> — a 32-character code at the top.</div>
           </div>
           <div class="instruction-item">
             <div class="step-num">3</div>
-            <div>Your <strong>Client ID</strong> is shown at the top — it's a 32-character code. Copy it.</div>
+            <div>Paste it below:</div>
           </div>
-        </div>`,
-    },
-
-    // Step 5 — Paste Client ID
-    {
-      title: 'Paste Your Client ID',
-      nextLabel: 'Save & Connect Spotify →',
-      body: `
-        <p>Paste the Client ID you copied from Spotify's Settings page.</p>
-        <div class="field-wrap" style="margin-top:4px;">
+        </div>
+        <div class="field-wrap" style="margin-top:8px;">
           <input type="text" id="client-id-input"
                  placeholder="e.g. a1b2c3d4e5f6789012345678901234ab"
                  maxlength="32" spellcheck="false" autocomplete="off"
