@@ -965,7 +965,7 @@ let searchResults    = [];
 // ════════════════════════════════════════════════
 //  Boot
 // ════════════════════════════════════════════════
-(async function boot() {
+async function boot() {
   // Handle OAuth callback
   const params = new URLSearchParams(window.location.search);
   if (params.get('code')) {
@@ -988,7 +988,7 @@ let searchResults    = [];
   } else {
     showAuthScreen();
   }
-})();
+}
 
 // ════════════════════════════════════════════════
 //  Onboarding Wizard
@@ -1879,6 +1879,11 @@ function showToast(msg, dur = 3000, href = null) {
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => { t.style.opacity = '0'; }, dur);
 }
+
+// ════════════════════════════════════════════════
+//  Start
+// ════════════════════════════════════════════════
+boot();
 </script>
 </body>
 </html>
