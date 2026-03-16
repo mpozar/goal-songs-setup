@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Walk-Up</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #1a1a1a;
+    --surface2: #252525;
+    --border: #333;
+    --accent: #1DB954;
+    --accent-dim: #158a3e;
+    --text: #fff;
+    --text-muted: #888;
+    --red: #e74c3c;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 480px;
+    padding: 16px;
+    min-height: 100vh;
+  }
+
+  /* ── Onboarding Screen ── */
+  #onboarding-screen {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 24px 0;
+  }
+
+  .ob-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .ob-header-logo { font-size: 24px; }
+  .ob-header-title { font-size: 18px; font-weight: 800; }
+
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .progress-steps {
+    display: flex;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .progress-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background .3s;
+  }
+
+  .progress-step.done   { background: var(--accent); }
+  .progress-step.active { background: var(--accent-dim); }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .step-content h2 {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .step-content p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .step-content p strong { color: var(--text); }
+
+  /* Illustration */
+  .illustration {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    overflow: hidden;
+  }
+
+  .illus-icon { font-size: 40px; text-align: center; margin-bottom: 10px; }
+
+  .illus-centered {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Dashboard mockup */
+  .mockup-bar {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    margin-bottom: 7px;
+  }
+  .mockup-bar.full   { width: 100%; }
+  .mockup-bar.wide   { width: 75%; }
+  .mockup-bar.mid    { width: 55%; }
+  .mockup-bar.short  { width: 35%; }
+  .mockup-bar.accent { background: var(--accent); width: 120px; height: 28px; border-radius: 6px; margin-top: 12px; }
+
+  /* Code block with copy button */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .code-block code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    flex: 1;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+
+  .copy-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all .15s;
+  }
+  .copy-btn:hover    { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied   { border-color: var(--accent); color: var(--accent); }
+
+  /* Instruction list */
+  .instruction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .instruction-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .instruction-item strong { color: var(--text); }
+
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Client ID input */
+  .field-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-note { font-size: 12px; color: var(--text-muted); }
+
+  .field-error {
+    font-size: 12px;
+    color: var(--red);
+    display: none;
+  }
+  .field-error.visible { display: block; }
+
+  /* Onboarding nav */
+  .ob-nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ── Auth Screen ── */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .logo { font-size: 48px; }
+
+  #auth-screen h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  #auth-screen p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 300px;
+    line-height: 1.5;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border-radius: var(--radius);
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn:active   { transform: scale(.97); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { opacity: .9; }
+
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-sm     { padding: 8px 14px; font-size: 13px; }
+  .btn-full   { width: 100%; }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    padding: 4px;
+    line-height: 1;
+    transition: color .15s;
+  }
+  .btn-icon:hover { color: var(--text); }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 20px;
+    gap: 12px;
+  }
+
+  .header h1 { font-size: 22px; font-weight: 800; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    max-width: 160px;
+    overflow: hidden;
+  }
+  .user-chip span    { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .user-chip:hover   { border-color: var(--text-muted); }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .tab.active { background: var(--surface2); color: var(--text); }
+
+  /* ── Team Tab ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 12px;
+  }
+
+  .add-player-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type="text"]:focus       { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--text-muted); }
+
+  /* ── Player Cards ── */
+  .player-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .player-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+
+  .player-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .player-name-input {
+    font-size: 16px;
+    font-weight: 700;
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 2px 0;
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .player-name-input:focus { border-bottom-color: var(--accent); }
+
+  .player-card-actions { display: flex; gap: 4px; }
+
+  .song-assigned {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .song-assigned img {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .song-info         { flex: 1; min-width: 0; }
+  .song-title        { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .song-artist       { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .start-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .start-time-row input[type="text"] {
+    width: 80px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 8px;
+    font-family: monospace;
+  }
+
+  .search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all .15s;
+    width: 100%;
+    text-align: left;
+  }
+  .search-trigger:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ── Modal / Search Overlay ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.8);
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 20px 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: slideUp .2s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-header h2 { font-size: 18px; font-weight: 700; }
+
+  .search-input-row { display: flex; gap: 8px; }
+
+  .results-list {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .result-item:hover { background: var(--surface2); }
+
+  .result-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .result-info   { flex: 1; min-width: 0; }
+  .result-title  { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-artist { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Time Picker ── */
+  .time-picker-section {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .time-picker-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+
+  .selected-song-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .selected-song-preview img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+  }
+
+  .time-display {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: monospace;
+    color: var(--accent);
+    min-width: 80px;
+    text-align: center;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    margin: 8px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ── Game Tab ── */
+  .now-playing-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { border-color: var(--accent); }
+    50%       { border-color: var(--accent-dim); }
+  }
+
+  .now-playing-bar img { width: 36px; height: 36px; border-radius: 4px; }
+
+  .now-playing-info   { flex: 1; min-width: 0; }
+  .now-playing-label  { font-size: 10px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .now-playing-title  { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .player-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .player-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 12px;
+    cursor: pointer;
+    transition: all .12s;
+    min-height: 110px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .player-btn:active { transform: scale(.96); }
+
+  .player-btn.active {
+    border-color: var(--accent);
+    background: rgba(29, 185, 84, 0.1);
+  }
+
+  .player-btn img           { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
+  .player-btn .btn-player-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .player-btn .btn-song-name   { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+  .playing-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+
+  .no-song-label { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+  .stop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    background: var(--surface);
+    border: 2px solid var(--red);
+    border-radius: var(--radius);
+    color: var(--red);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all .12s;
+  }
+  .stop-btn:active { transform: scale(.98); background: rgba(231,76,60,.15); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    white-space: normal;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+    animation: toastIn .2s ease;
+    pointer-events: auto;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ── Misc ── */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+
+  /* ── Logout Menu ── */
+  .logout-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    z-index: 50;
+    min-width: 160px;
+  }
+  .logout-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .logout-menu button:hover  { background: var(--border); }
+  .logout-menu button.danger { color: var(--red); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ Onboarding Screen ═══ -->
+  <div id="onboarding-screen" class="hidden">
+    <div class="ob-header">
+      <span class="ob-header-logo">🎵</span>
+      <span class="ob-header-title">Walk-Up Setup</span>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-steps" id="progress-steps"></div>
+      <span class="progress-label" id="progress-label">Step 1 of 5</span>
+    </div>
+
+    <div class="step-content" id="step-content"></div>
+
+    <div class="ob-nav">
+      <button class="btn btn-secondary" id="ob-back-btn" onclick="obBack()" style="flex:1;">← Back</button>
+      <button class="btn btn-primary"   id="ob-next-btn" onclick="obNext()" style="flex:2;">Next →</button>
+    </div>
+  </div>
+
+  <!-- ═══ Auth / Login Screen ═══ -->
+  <div id="auth-screen" class="hidden">
+    <div class="logo">🎵</div>
+    <h1>Walk-Up</h1>
+    <p>Connect Spotify to start playing walk-up music for your players.</p>
+    <button class="btn btn-primary" id="connect-btn" style="font-size:16px; padding: 16px 32px;">
+      Connect Spotify
+    </button>
+    <p style="font-size:12px;">Requires Spotify Premium</p>
+    <button class="btn btn-secondary btn-sm" onclick="resetToOnboarding()" style="margin-top:4px;">
+      ← Change Client ID
+    </button>
+  </div>
+
+  <!-- ═══ Main App ═══ -->
+  <div id="main-app" class="hidden">
+    <div class="header">
+      <h1>🎵 Walk-Up</h1>
+      <div class="header-right">
+        <div class="user-chip" id="user-chip" onclick="toggleLogoutMenu()">
+          <span>♪</span>
+          <span id="user-name">...</span>
+          <span>▾</span>
+        </div>
+        <div class="logout-menu hidden" id="logout-menu">
+          <button onclick="logout()">Disconnect Spotify</button>
+          <button onclick="resetToOnboarding()" class="danger">Reset Setup</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-team" onclick="switchTab('team')">Team</button>
+      <button class="tab"        id="tab-game" onclick="switchTab('game')">Game</button>
+    </div>
+
+    <!-- Team Tab -->
+    <div id="team-tab">
+      <p class="section-title">Add Player</p>
+      <div class="add-player-form">
+        <input type="text" id="new-player-name" placeholder="Player name"
+               onkeydown="if(event.key==='Enter')addPlayer()">
+        <button class="btn btn-primary" onclick="addPlayer()">Add</button>
+      </div>
+
+      <p class="section-title">Roster</p>
+      <div class="player-list" id="player-list"></div>
+
+      <div class="empty-state hidden" id="setup-empty">
+        <div class="empty-icon">👤</div>
+        <p>No players yet.<br>Add your first player above.</p>
+      </div>
+    </div>
+
+    <!-- Game Tab -->
+    <div id="game-tab" class="hidden">
+      <div id="now-playing-bar" class="now-playing-bar hidden">
+        <img id="np-art" src="" alt="">
+        <div class="now-playing-info">
+          <div class="now-playing-label">Now Playing</div>
+          <div class="now-playing-title" id="np-title"></div>
+        </div>
+        <button class="btn-icon" onclick="stopPlayback()" title="Stop">⏹</button>
+      </div>
+
+      <div class="player-grid" id="player-grid"></div>
+
+      <div class="empty-state hidden" id="game-empty">
+        <div class="empty-icon">🎵</div>
+        <p>No players yet.<br>Go to Team to add your roster.</p>
+      </div>
+
+      <button class="stop-btn hidden" id="stop-btn" onclick="stopPlayback()">
+        ⏹ Stop
+      </button>
+
+      <div id="open-spotify-option" style="margin-top:16px;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;color:#aaa;font-size:13px;">
+          <input type="checkbox" id="toggle-open-spotify"
+                 onchange="toggleOpenSpotifyOnTap(this.checked)"
+                 style="width:16px;height:16px;cursor:pointer;">
+          Always open Spotify app on player tap
+        </label>
+      </div>
+
+      <details id="debug-panel" style="margin-top:16px;font-size:12px;color:#aaa;background:#111;border:1px solid #333;border-radius:8px;padding:10px;">
+        <summary style="cursor:pointer;font-weight:600;color:#1db954;">🛠 Debug</summary>
+        <pre id="debug-log" style="margin-top:8px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;font-size:11px;line-height:1.5;">(no activity yet)</pre>
+      </details>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- Search / Song Modal -->
+<div class="modal-overlay hidden" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Choose Song</h2>
+      <button class="btn-icon" onclick="closeModal()" style="font-size:22px;">✕</button>
+    </div>
+
+    <div class="search-input-row">
+      <input type="text" id="search-input" placeholder="Search song or artist…"
+             onkeydown="if(event.key==='Enter')searchTracks()">
+      <button class="btn btn-primary btn-sm" onclick="searchTracks()" id="search-btn">Search</button>
+    </div>
+
+    <div class="results-list" id="results-list"></div>
+
+    <div class="time-picker-section hidden" id="time-picker-section">
+      <h3>Set start time</h3>
+      <div class="selected-song-preview" id="selected-song-preview"></div>
+
+      <div style="text-align:center;">
+        <span class="time-display" id="time-display">0:00</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);">
+        <span style="font-family:monospace;min-width:36px;" id="preview-current">0:00</span>
+        <input type="range" id="time-slider" min="0" max="30" step="0.5" value="0"
+               oninput="onSliderInput(this.value)">
+        <span style="font-family:monospace;min-width:36px;" id="preview-total">0:30</span>
+      </div>
+
+      <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="confirmSong()">
+        Use This Song
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════════
+const REDIRECT_URI = window.location.origin + '/';
+
+const SCOPES = [
+  'user-read-playback-state',
+  'user-modify-playback-state',
+  'streaming',
+].join(' ');
+
+// localStorage keys
+const K = {
+  CLIENT_ID    : 'walkup_client_id',
+  ROSTER       : 'walkup_roster',
+  TOKEN        : 'walkup_token',
+  TOKEN_EXPIRY : 'walkup_token_expiry',
+  REFRESH      : 'walkup_refresh_token',
+  VERIFIER     : 'walkup_pkce_verifier',
+  STATE        : 'walkup_pkce_state',
+  OPEN_SPOTIFY : 'open_spotify_on_tap',
+};
+
+// ════════════════════════════════════════════════
+//  State
+// ════════════════════════════════════════════════
+let players          = [];
+let activePlayer     = null;
+let modalPlayerIdx   = null;
+let pendingTrack     = null;
+let sdkDeviceId      = null;
+let sdkPlayer        = null;
+let retryToken       = 0;
+let openSpotifyOnTap = localStorage.getItem(K.OPEN_SPOTIFY) === 'true';
+let searchResults    = [];
+
+// ════════════════════════════════════════════════
+//  Boot
+// ════════════════════════════════════════════════
+(async function boot() {
+  // Handle OAuth callback
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('code')) {
+    await handleOAuthCallback(params.get('code'), params.get('state'));
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  const clientId = localStorage.getItem(K.CLIENT_ID);
+  if (!clientId) {
+    showOnboarding();
+    return;
+  }
+
+  const token  = localStorage.getItem(K.TOKEN);
+  const expiry = parseInt(localStorage.getItem(K.TOKEN_EXPIRY) || '0');
+  if (token && Date.now() < expiry - 30000) {
+    showApp();
+    loadPlayers();
+    fetchUserProfile();
+  } else {
+    showAuthScreen();
+  }
+})();
+
+// ════════════════════════════════════════════════
+//  Onboarding Wizard
+// ════════════════════════════════════════════════
+let obStep = 1;
+const OB_TOTAL = 5;
+
+// Steps are rendered as functions so template expressions evaluate at render time
+function getSteps() {
+  const redirectUri = window.location.origin + '/';
+  return [
+    // Step 1 — Welcome
+    {
+      title: 'Welcome to Walk-Up',
+      hideBack: true,
+      nextLabel: 'Get Started →',
+      illustration: `
+        <div class="illustration">
+          <div class="illus-icon">🎵</div>
+          <div class="illus-centered">
+            <strong style="color:var(--text);">Tap a player. Their song plays instantly.</strong><br>
+            Walk-Up connects to Spotify so you can trigger walk-up music the moment a player steps up.
+          </div>
+        </div>`,
+      body: `
+        <p>To get started you'll need a free <strong>Spotify Developer account</strong>.
+        Setup takes about 5 minutes and you only need to do it once.</p>
+        <p style="margin-top:6px;">You'll also need <strong>Spotify Premium</strong> to control playback from the app.</p>`,
+    },
+
+    // Step 2 — Create Spotify Developer App
+    {
+      title: 'Create a Spotify App',
+      illustration: `
+        <div class="illustration">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-align:left;">developer.spotify.com/dashboard</div>
+          <div class="mockup-bar full"></div>
+          <div class="mockup-bar wide"></div>
+          <div class="mockup-bar mid"></div>
+          <div class="mockup-bar short"></div>
+          <div class="mockup-bar accent"></div>
+        </div>`,
+      body: `
+        <div class="instruction-list">
+          <div class="instruction-item">
+            <div class="step-num">1</div>
+            <div>Open the Spotify Developer Dashboard and log in with your Spotify account.</div>
+          </div>
+          <div class="instruction-item">
+            <div class="step-num">2</div>
+            <div>Click <strong>Create App</strong>.</div>
+          </div>
+        </div>
+        <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener"
+           class="btn btn-primary btn-full" style="margin-top:10px;">
+          Open Spotify Developer Dashboard →
+        </a>`,
+    },
+
+    // Step 3 — Fill in app details
+    {
+      title: 'Fill In Your App Details',
+      illustration: `
+        <div class="illustration" style="font-size:12px;text-align:left;">
+          <div style="color:var(--text-muted);margin-bottom:3px;">App name</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:10px;">Walk-Up</div>
+          <div style="color:var(--text-muted);margin-bottom:3px;">Redirect URI</div>
+          <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:6px;padding:7px 10px;margin-bottom:10px;font-family:monospace;font-size:11px;color:var(--accent);word-break:break-all;">${redirectUri}</div>
+          <div style="color:var(--text-muted);margin-bottom:6px;">APIs used</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:14px;height:14px;background:var(--accent);border-radius:3px;flex-shrink:0;"></div>
+            <span>Web API</span>
+          </div>
+        </div>`,
+      body: `
+        <div class="instruction-list">
+          <div class="instruction-item">
+            <div class="step-num">1</div>
+            <div>Enter any <strong>App name</strong> and description — "Walk-Up" works great.</div>
+          </div>
+          <div class="instruction-item">
+            <div class="step-num">2</div>
+            <div>Add this exact <strong>Redirect URI</strong>:</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <code>${redirectUri}</code>
+          <button class="copy-btn" onclick="copyRedirectUri(this)">Copy</button>
+        </div>
+        <div class="instruction-list" style="margin-top:10px;">
+          <div class="instruction-item">
+            <div class="step-num">3</div>
+            <div>Under <strong>APIs used</strong>, check <strong>Web API</strong> only.</div>
+          </div>
+          <div class="instruction-item">
+            <div class="step-num">4</div>
+            <div>Click <strong>Save</strong>.</div>
+          </div>
+        </div>`,
+    },
+
+    // Step 4 — Get Client ID
+    {
+      title: 'Find Your Client ID',
+      illustration: `
+        <div class="illustration" style="font-size:12px;text-align:left;">
+          <div style="color:var(--text-muted);font-weight:600;margin-bottom:10px;">App Settings</div>
+          <div style="color:var(--text-muted);margin-bottom:3px;">Client ID</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:monospace;font-size:11px;color:var(--accent);letter-spacing:1px;margin-bottom:10px;">a1b2c3d4e5f6789012345678…</div>
+          <div style="color:var(--text-muted);margin-bottom:3px;">Client secret</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:monospace;font-size:11px;color:var(--text-muted);">••••••••••••••••••••</div>
+        </div>`,
+      body: `
+        <div class="instruction-list">
+          <div class="instruction-item">
+            <div class="step-num">1</div>
+            <div>Go to your new app on the Spotify Developer Dashboard.</div>
+          </div>
+          <div class="instruction-item">
+            <div class="step-num">2</div>
+            <div>Click <strong>Settings</strong> in the top right.</div>
+          </div>
+          <div class="instruction-item">
+            <div class="step-num">3</div>
+            <div>Your <strong>Client ID</strong> is shown at the top — it's a 32-character code. Copy it.</div>
+          </div>
+        </div>`,
+    },
+
+    // Step 5 — Paste Client ID
+    {
+      title: 'Paste Your Client ID',
+      nextLabel: 'Save & Connect Spotify →',
+      body: `
+        <p>Paste the Client ID you copied from Spotify's Settings page.</p>
+        <div class="field-wrap" style="margin-top:4px;">
+          <input type="text" id="client-id-input"
+                 placeholder="e.g. a1b2c3d4e5f6789012345678901234ab"
+                 maxlength="32" spellcheck="false" autocomplete="off"
+                 oninput="validateClientId()"
+                 style="font-family:monospace;font-size:14px;letter-spacing:1px;">
+          <p class="field-note">Must be exactly 32 hexadecimal characters (0–9, a–f).</p>
+          <p class="field-error" id="client-id-error">
+            Doesn't look right — should be 32 letters/numbers (0–9, a–f) with no spaces.
+          </p>
+        </div>`,
+    },
+  ];
+}
+
+function showOnboarding() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('onboarding-screen').classList.remove('hidden');
+  obStep = 1;
+  renderStep();
+}
+
+function renderStep() {
+  const steps = getSteps();
+  const step  = steps[obStep - 1];
+
+  // Progress bar
+  document.getElementById('progress-steps').innerHTML =
+    Array.from({ length: OB_TOTAL }, (_, i) => {
+      const cls = i + 1 < obStep ? 'done' : i + 1 === obStep ? 'active' : '';
+      return `<div class="progress-step ${cls}"></div>`;
+    }).join('');
+
+  document.getElementById('progress-label').textContent = `Step ${obStep} of ${OB_TOTAL}`;
+
+  // Content
+  document.getElementById('step-content').innerHTML = `
+    <h2>${step.title}</h2>
+    ${step.illustration || ''}
+    <div>${step.body}</div>
+  `;
+
+  // Restore saved Client ID on step 5
+  if (obStep === 5) {
+    const saved = localStorage.getItem(K.CLIENT_ID);
+    if (saved) document.getElementById('client-id-input').value = saved;
+  }
+
+  // Nav buttons
+  document.getElementById('ob-back-btn').classList.toggle('hidden', !!step.hideBack);
+  document.getElementById('ob-next-btn').textContent = step.nextLabel || 'Next →';
+}
+
+function obBack() {
+  if (obStep > 1) { obStep--; renderStep(); }
+}
+
+function obNext() {
+  if (obStep === OB_TOTAL) { saveClientId(); return; }
+  obStep++;
+  renderStep();
+}
+
+function validateClientId() {
+  const val = (document.getElementById('client-id-input')?.value || '').trim();
+  const err = document.getElementById('client-id-error');
+  const ok  = /^[0-9a-f]{32}$/.test(val);
+  if (err) err.classList.toggle('visible', val.length > 0 && !ok);
+  return ok;
+}
+
+function saveClientId() {
+  if (!validateClientId()) {
+    const input = document.getElementById('client-id-input');
+    if (input) input.focus();
+    showToast('Please enter a valid 32-character Client ID');
+    return;
+  }
+  const val = document.getElementById('client-id-input').value.trim();
+  localStorage.setItem(K.CLIENT_ID, val);
+  showAuthScreen();
+}
+
+function copyRedirectUri(btn) {
+  const uri = window.location.origin + '/';
+  navigator.clipboard.writeText(uri).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    showToast('Copy failed — please select and copy the URI manually');
+  });
+}
+
+function resetToOnboarding() {
+  [K.CLIENT_ID, K.TOKEN, K.TOKEN_EXPIRY, K.REFRESH, K.VERIFIER, K.STATE]
+    .forEach(k => localStorage.removeItem(k));
+  window.location.reload();
+}
+
+// ════════════════════════════════════════════════
+//  Auth Screen
+// ════════════════════════════════════════════════
+function showAuthScreen() {
+  document.getElementById('onboarding-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+
+// ════════════════════════════════════════════════
+//  PKCE helpers
+// ════════════════════════════════════════════════
+function generateCodeVerifier(len = 64) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  let v = '';
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => v += chars[b % chars.length]);
+  return v;
+}
+
+async function generateCodeChallenge(verifier) {
+  const data   = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+document.getElementById('connect-btn').onclick = async () => {
+  const clientId = localStorage.getItem(K.CLIENT_ID);
+  if (!clientId) { showOnboarding(); return; }
+
+  const verifier  = generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  const state     = crypto.randomUUID();
+
+  localStorage.setItem(K.VERIFIER, verifier);
+  localStorage.setItem(K.STATE,    state);
+
+  const url = new URL('https://accounts.spotify.com/authorize');
+  url.searchParams.set('client_id',             clientId);
+  url.searchParams.set('response_type',         'code');
+  url.searchParams.set('redirect_uri',          REDIRECT_URI);
+  url.searchParams.set('scope',                 SCOPES);
+  url.searchParams.set('state',                 state);
+  url.searchParams.set('code_challenge_method', 'S256');
+  url.searchParams.set('code_challenge',        challenge);
+  window.location.href = url.toString();
+};
+
+async function handleOAuthCallback(code, state) {
+  const savedState   = localStorage.getItem(K.STATE);
+  const codeVerifier = localStorage.getItem(K.VERIFIER);
+  const clientId     = localStorage.getItem(K.CLIENT_ID);
+
+  if (!clientId) { showToast('No Client ID found — please complete setup'); return; }
+  if (state !== savedState) { showToast('Auth state mismatch — please try again'); return; }
+
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'authorization_code',
+      code,
+      redirect_uri:  REDIRECT_URI,
+      client_id:     clientId,
+      code_verifier: codeVerifier,
+    }),
+  });
+
+  const data = await res.json();
+  if (data.access_token) {
+    const expiry = Date.now() + data.expires_in * 1000;
+    localStorage.setItem(K.TOKEN,        data.access_token);
+    localStorage.setItem(K.REFRESH,      data.refresh_token || '');
+    localStorage.setItem(K.TOKEN_EXPIRY, expiry);
+    localStorage.removeItem(K.VERIFIER);
+    localStorage.removeItem(K.STATE);
+  } else {
+    showToast('Login failed: ' + (data.error_description || 'unknown error'));
+  }
+}
+
+async function refreshToken() {
+  const rt       = localStorage.getItem(K.REFRESH);
+  const clientId = localStorage.getItem(K.CLIENT_ID);
+  if (!rt || !clientId) return null;
+
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'refresh_token',
+      refresh_token: rt,
+      client_id:     clientId,
+    }),
+  });
+
+  const data = await res.json();
+  if (data.access_token) {
+    const expiry = Date.now() + data.expires_in * 1000;
+    localStorage.setItem(K.TOKEN,        data.access_token);
+    localStorage.setItem(K.TOKEN_EXPIRY, expiry);
+    if (data.refresh_token) localStorage.setItem(K.REFRESH, data.refresh_token);
+    return data.access_token;
+  }
+  return null;
+}
+
+async function getValidToken() {
+  const expiry = parseInt(localStorage.getItem(K.TOKEN_EXPIRY) || '0');
+  if (Date.now() < expiry - 30000) return localStorage.getItem(K.TOKEN);
+  const fresh = await refreshToken();
+  if (!fresh) { logout(); return null; }
+  return fresh;
+}
+
+// ════════════════════════════════════════════════
+//  App shell
+// ════════════════════════════════════════════════
+function isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function showApp() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('onboarding-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+
+  if (isMobile()) {
+    document.getElementById('toggle-open-spotify').checked = openSpotifyOnTap;
+    debugLog('📱 mobile detected — using Web API fallback (no SDK)');
+  } else {
+    document.getElementById('open-spotify-option').style.display = 'none';
+    initSpotifySDK();
+  }
+}
+
+function initSpotifySDK() {
+  if (!document.getElementById('spotify-sdk-script')) {
+    const script = document.createElement('script');
+    script.id  = 'spotify-sdk-script';
+    script.src = 'https://sdk.scdn.co/spotify-player.js';
+    document.body.appendChild(script);
+  }
+
+  window.onSpotifyWebPlaybackSDKReady = async () => {
+    sdkPlayer = new Spotify.Player({
+      name: 'Walk-Up',
+      getOAuthToken: async cb => { cb(await getValidToken()); },
+      volume: 1.0,
+    });
+
+    sdkPlayer.addListener('ready', ({ device_id }) => {
+      sdkDeviceId = device_id;
+      debugLog(`SDK ready — device_id: ${device_id}`);
+      getValidToken().then(t => {
+        fetch('https://api.spotify.com/v1/me/player', {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_ids: [device_id], play: false }),
+        });
+      });
+    });
+
+    sdkPlayer.addListener('not_ready', ({ device_id }) => {
+      debugLog(`SDK device went offline: ${device_id}`);
+      sdkDeviceId = null;
+    });
+
+    sdkPlayer.addListener('initialization_error', ({ message }) => debugLog('SDK init error: ' + message));
+    sdkPlayer.addListener('authentication_error',  ({ message }) => debugLog('SDK auth error: ' + message));
+    sdkPlayer.addListener('account_error',         ({ message }) => debugLog('SDK account error (Premium required?): ' + message));
+
+    sdkPlayer.connect();
+  };
+}
+
+function logout() {
+  [K.TOKEN, K.REFRESH, K.TOKEN_EXPIRY, K.VERIFIER, K.STATE]
+    .forEach(k => localStorage.removeItem(k));
+  window.location.reload();
+}
+
+function toggleLogoutMenu() {
+  document.getElementById('logout-menu').classList.toggle('hidden');
+}
+
+document.addEventListener('click', e => {
+  const menu = document.getElementById('logout-menu');
+  if (!menu.classList.contains('hidden') &&
+      !document.getElementById('user-chip').contains(e.target) &&
+      !menu.contains(e.target)) {
+    menu.classList.add('hidden');
+  }
+});
+
+async function fetchUserProfile() {
+  const res = await spotifyFetch('/me');
+  if (res && res.display_name) {
+    document.getElementById('user-name').textContent = res.display_name.split(' ')[0];
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('team-tab').classList.toggle('hidden', tab !== 'team');
+  document.getElementById('game-tab').classList.toggle('hidden',  tab !== 'game');
+  document.getElementById('tab-team').classList.toggle('active', tab === 'team');
+  document.getElementById('tab-game').classList.toggle('active',  tab === 'game');
+  if (tab === 'game') renderGameScreen();
+}
+
+// ════════════════════════════════════════════════
+//  Players persistence
+// ════════════════════════════════════════════════
+function loadPlayers() {
+  try { players = JSON.parse(localStorage.getItem(K.ROSTER) || '[]'); }
+  catch { players = []; }
+  renderSetupScreen();
+}
+
+function savePlayers() {
+  localStorage.setItem(K.ROSTER, JSON.stringify(players));
+}
+
+function addPlayer() {
+  const input = document.getElementById('new-player-name');
+  const name  = input.value.trim();
+  if (!name) return;
+  players.push({ id: crypto.randomUUID(), name, track: null, startMs: 0 });
+  savePlayers();
+  renderSetupScreen();
+  input.value = '';
+}
+
+function removePlayer(id) {
+  players = players.filter(p => p.id !== id);
+  savePlayers();
+  renderSetupScreen();
+}
+
+// ════════════════════════════════════════════════
+//  Team Screen render
+// ════════════════════════════════════════════════
+function renderSetupScreen() {
+  const list  = document.getElementById('player-list');
+  const empty = document.getElementById('setup-empty');
+
+  if (players.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  list.innerHTML = players.map((p, i) => `
+    <div class="player-card" id="card-${p.id}">
+      <div class="player-card-header">
+        <input class="player-name-input" type="text" value="${esc(p.name)}"
+               onchange="updatePlayerName('${p.id}', this.value)" placeholder="Player name">
+        <div class="player-card-actions">
+          <button class="btn-icon" onclick="removePlayer('${p.id}')" title="Remove">🗑</button>
+        </div>
+      </div>
+
+      ${p.track ? `
+        <div class="song-assigned">
+          <img src="${esc(p.track.art)}" alt="">
+          <div class="song-info">
+            <div class="song-title">${esc(p.track.name)}</div>
+            <div class="song-artist">${esc(p.track.artist)}</div>
+          </div>
+          <button class="btn-icon" onclick="openModal(${i})" title="Change song">✎</button>
+        </div>
+        <div class="start-time-row">
+          <span>Start at (ms)</span>
+          <input type="text" id="time-input-${p.id}" value="${p.startMs ?? 0}"
+                 placeholder="0"
+                 onchange="updateStartTime('${p.id}', this.value)"
+                 onblur="updateStartTime('${p.id}', this.value)">
+        </div>
+      ` : `
+        <button class="search-trigger" onclick="openModal(${i})">
+          🎵 Assign walk-up song…
+        </button>
+      `}
+    </div>
+  `).join('');
+}
+
+function updatePlayerName(id, name) {
+  const p = players.find(p => p.id === id);
+  if (p) { p.name = name; savePlayers(); }
+}
+
+function updateStartTime(id, val) {
+  const p = players.find(p => p.id === id);
+  if (!p) return;
+  const ms = parseInt(val, 10);
+  if (!isNaN(ms) && ms >= 0) {
+    p.startMs = ms;
+    savePlayers();
+    document.getElementById('time-input-' + id).value = ms;
+  }
+}
+
+// ════════════════════════════════════════════════
+//  Modal / Song Search
+// ════════════════════════════════════════════════
+function openModal(playerIdx) {
+  modalPlayerIdx = playerIdx;
+  pendingTrack   = null;
+
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  document.getElementById('search-input').value     = '';
+  document.getElementById('results-list').innerHTML  = '';
+  document.getElementById('time-picker-section').classList.add('hidden');
+
+  const existing = players[playerIdx]?.track;
+  if (existing) {
+    document.getElementById('search-input').value = existing.name + ' ' + existing.artist;
+    searchTracks();
+  }
+
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  modalPlayerIdx = null;
+  pendingTrack   = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+async function searchTracks() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+
+  const btn     = document.getElementById('search-btn');
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  document.getElementById('time-picker-section').classList.add('hidden');
+  document.getElementById('results-list').innerHTML =
+    '<div style="padding:12px;color:var(--text-muted);font-size:14px;">Searching…</div>';
+
+  const data = await spotifyFetch(`/search?q=${encodeURIComponent(q)}&type=track&limit=8`);
+
+  btn.disabled    = false;
+  btn.textContent = 'Search';
+
+  if (!data || !data.tracks) {
+    document.getElementById('results-list').innerHTML =
+      '<div style="padding:12px;color:var(--text-muted);font-size:14px;">No results.</div>';
+    return;
+  }
+
+  const tracks = data.tracks.items;
+  document.getElementById('results-list').innerHTML = tracks.map((t, i) => `
+    <div class="result-item" onclick="selectTrack(${i})">
+      <img src="${esc(t.album?.images?.[2]?.url || t.album?.images?.[0]?.url || '')}" alt="">
+      <div class="result-info">
+        <div class="result-title">${esc(t.name)}</div>
+        <div class="result-artist">${esc(t.artists.map(a => a.name).join(', '))}</div>
+      </div>
+    </div>
+  `).join('');
+
+  searchResults = tracks;
+}
+
+function selectTrack(idx) {
+  const t = searchResults[idx];
+  pendingTrack = {
+    id:         t.id,
+    uri:        t.uri,
+    name:       t.name,
+    artist:     t.artists.map(a => a.name).join(', '),
+    art:        t.album?.images?.[0]?.url || '',
+    artThumb:   t.album?.images?.[2]?.url || t.album?.images?.[0]?.url || '',
+    durationMs: t.duration_ms || 0,
+  };
+
+  document.getElementById('selected-song-preview').innerHTML = `
+    <img src="${esc(pendingTrack.artThumb)}" alt="">
+    <div class="song-info">
+      <div class="song-title">${esc(pendingTrack.name)}</div>
+      <div class="song-artist">${esc(pendingTrack.artist)}</div>
+    </div>
+  `;
+
+  const slider     = document.getElementById('time-slider');
+  const maxSec     = Math.floor(pendingTrack.durationMs / 1000);
+  const existingMs = players[modalPlayerIdx]?.startMs ?? 0;
+  slider.max   = maxSec;
+  slider.value = Math.min(existingMs / 1000, maxSec);
+
+  document.getElementById('preview-total').textContent   = secToMmss(maxSec);
+  document.getElementById('preview-current').textContent = secToMmss(parseFloat(slider.value));
+  document.getElementById('time-display').textContent    = secToMmss(parseFloat(slider.value));
+
+  document.getElementById('time-picker-section').classList.remove('hidden');
+  document.getElementById('time-picker-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function onSliderInput(val) {
+  const mmss = secToMmss(parseFloat(val));
+  document.getElementById('time-display').textContent    = mmss;
+  document.getElementById('preview-current').textContent = mmss;
+}
+
+function confirmSong() {
+  if (!pendingTrack || modalPlayerIdx === null) return;
+  const startMs = Math.round(parseFloat(document.getElementById('time-slider').value) * 1000) || 0;
+  players[modalPlayerIdx].track   = pendingTrack;
+  players[modalPlayerIdx].startMs = startMs;
+  savePlayers();
+  closeModal();
+  renderSetupScreen();
+}
+
+// ════════════════════════════════════════════════
+//  Game Screen
+// ════════════════════════════════════════════════
+function renderGameScreen() {
+  const grid  = document.getElementById('player-grid');
+  const empty = document.getElementById('game-empty');
+  const stop  = document.getElementById('stop-btn');
+
+  if (players.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    stop.classList.add('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  stop.classList.remove('hidden');
+
+  grid.innerHTML = players.map(p => `
+    <button class="player-btn ${activePlayer === p.id ? 'active' : ''}"
+            id="pbtn-${p.id}"
+            onclick="triggerPlayer('${p.id}')"
+            ${!p.track ? 'disabled' : ''}>
+      ${activePlayer === p.id ? '<div class="playing-indicator"></div>' : ''}
+      ${p.track
+        ? `<img src="${esc(p.track.artThumb || p.track.art)}" alt="">`
+        : `<span style="font-size:28px;">🎵</span>`
+      }
+      <div class="btn-player-name">${esc(p.name)}</div>
+      ${p.track
+        ? `<div class="btn-song-name">${esc(p.track.name)}</div>`
+        : `<div class="no-song-label">No song</div>`
+      }
+    </button>
+  `).join('');
+}
+
+async function triggerPlayer(id) {
+  const p = players.find(p => p.id === id);
+  if (!p?.track) return;
+
+  // Must happen synchronously inside the gesture handler (iOS URI scheme requirement)
+  if (openSpotifyOnTap && isMobile()) window.location.href = 'spotify://';
+
+  retryToken++;
+  activePlayer = id;
+  renderGameScreen();
+
+  document.getElementById('np-art').src          = p.track.artThumb || p.track.art;
+  document.getElementById('np-title').textContent = `${p.name} — ${p.track.name}`;
+  document.getElementById('now-playing-bar').classList.remove('hidden');
+
+  await playOnSpotify(p.track.uri, p.startMs ?? 0);
+}
+
+function toggleOpenSpotifyOnTap(val) {
+  openSpotifyOnTap = val;
+  localStorage.setItem(K.OPEN_SPOTIFY, val);
+  debugLog(`⚙ "Always open Spotify on tap" ${val ? 'enabled' : 'disabled'}`);
+}
+
+function debugLog(msg) {
+  const el = document.getElementById('debug-log');
+  if (!el) return;
+  const ts = new Date().toLocaleTimeString();
+  el.textContent = `[${ts}] ${msg}\n` + el.textContent;
+}
+
+async function playOnSpotify(uri, startMs) {
+  const token = await getValidToken();
+  if (!token) return;
+
+  const myToken = ++retryToken;
+  debugLog(`▶ play requested  uri=${uri}  startMs=${startMs}`);
+
+  const playHeaders = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const playBody    = JSON.stringify({ uris: [uri], position_ms: startMs });
+
+  // Desktop: use SDK device, with one transfer+retry if it's gone idle
+  if (!isMobile() && sdkDeviceId) {
+    debugLog(`mode: SDK desktop — device_id: ${sdkDeviceId}`);
+    let res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${sdkDeviceId}`, {
+      method: 'PUT', headers: playHeaders, body: playBody,
+    });
+    debugLog(`← status: ${res.status}`);
+
+    if (res.status === 404) {
+      debugLog('404 — re-transferring SDK device and retrying…');
+      await fetch('https://api.spotify.com/v1/me/player', {
+        method: 'PUT', headers: playHeaders,
+        body: JSON.stringify({ device_ids: [sdkDeviceId], play: false }),
+      });
+      await new Promise(r => setTimeout(r, 600));
+      if (retryToken !== myToken) return;
+      res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${sdkDeviceId}`, {
+        method: 'PUT', headers: playHeaders, body: playBody,
+      });
+      debugLog(`← retry status: ${res.status}`);
+    }
+
+    if (res.status === 403) { showToast('Spotify Premium required'); }
+    else if (!res.ok && res.status !== 204) { showToast('Playback error — try again'); }
+    else { debugLog('✓ playback started'); }
+    return;
+  }
+
+  // Mobile: attempt play, then retry every 500ms for up to 15s if no device found
+  const MAX_ATTEMPTS = 30;
+  const INTERVAL_MS  = 500;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    if (retryToken !== myToken) {
+      debugLog('↩ retry cancelled (new request)');
+      return;
+    }
+
+    const data    = await spotifyFetch('/me/player/devices');
+    const devices = data?.devices || [];
+    const best    = devices.find(d => d.is_active) || devices[0] || null;
+
+    if (!best) {
+      if (attempt === 1) {
+        debugLog(`attempt ${attempt}/${MAX_ATTEMPTS} — no device, showing prompt…`);
+        showToast('Tap here to open Spotify — playback will start automatically', 15000, 'spotify://');
+      } else {
+        debugLog(`attempt ${attempt}/${MAX_ATTEMPTS} — still no device`);
+      }
+      await new Promise(r => setTimeout(r, INTERVAL_MS));
+      continue;
+    }
+
+    debugLog(`attempt ${attempt}/${MAX_ATTEMPTS} — device: ${best.name}, sending play…`);
+    const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${best.id}`, {
+      method: 'PUT', headers: playHeaders, body: playBody,
+    });
+    debugLog(`← status: ${res.status}`);
+
+    if (retryToken !== myToken) { debugLog('↩ retry cancelled (new request)'); return; }
+
+    if (res.status === 204 || res.ok) {
+      debugLog('✓ playback started');
+      showToast('', 1);
+      return;
+    } else if (res.status === 403) {
+      debugLog('✗ 403 — Premium required');
+      showToast('Spotify Premium required');
+      return;
+    } else {
+      debugLog(`attempt ${attempt}/${MAX_ATTEMPTS} — status ${res.status}, retrying…`);
+      await new Promise(r => setTimeout(r, INTERVAL_MS));
+    }
+  }
+
+  if (retryToken === myToken) {
+    debugLog('✗ all attempts exhausted');
+    showToast('Could not reach Spotify — is the app open?');
+  }
+}
+
+async function stopPlayback() {
+  retryToken++;
+  activePlayer = null;
+  document.getElementById('now-playing-bar').classList.add('hidden');
+  renderGameScreen();
+
+  const token = await getValidToken();
+  if (!token) return;
+
+  await fetch(`https://api.spotify.com/v1/me/player/pause${sdkDeviceId ? '?device_id=' + sdkDeviceId : ''}`, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + token },
+  });
+}
+
+// ════════════════════════════════════════════════
+//  Spotify API helper
+// ════════════════════════════════════════════════
+async function spotifyFetch(path, opts = {}) {
+  const token = await getValidToken();
+  if (!token) return null;
+
+  const res = await fetch('https://api.spotify.com/v1' + path, {
+    ...opts,
+    headers: {
+      Authorization: 'Bearer ' + token,
+      ...(opts.headers || {}),
+    },
+  });
+
+  if (res.status === 401) { logout(); return null; }
+  if (res.status === 204 || res.status === 202) return {};
+  if (!res.ok) return null;
+
+  try { return await res.json(); }
+  catch { return {}; }
+}
+
+// ════════════════════════════════════════════════
+//  Utilities
+// ════════════════════════════════════════════════
+function secToMmss(s) {
+  s = parseFloat(s);
+  const m   = Math.floor(s / 60);
+  const sec = String(Math.floor(s % 60)).padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+let _toastTimer = null;
+function showToast(msg, dur = 3000, href = null) {
+  let t = document.querySelector('.toast');
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  if (href) {
+    t.innerHTML = `<a href="${href}" style="color:inherit;text-decoration:underline;">${msg}</a>`;
+  } else {
+    t.textContent = msg;
+  }
+  t.style.opacity = '1';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.style.opacity = '0'; }, dur);
+}
+</script>
+</body>
+</html>
