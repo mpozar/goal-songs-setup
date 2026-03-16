@@ -1074,14 +1074,14 @@ function getSteps() {
           </div>
           <div class="instruction-item">
             <div class="step-num">2</div>
-            <div>Add this exact <strong>Redirect URI</strong>:</div>
+            <div style="min-width:0;flex:1;">
+              <div>Add this exact <strong>Redirect URI</strong>:</div>
+              <div class="code-block" style="margin-top:8px;">
+                <code>${redirectUri}</code>
+                <button class="copy-btn" onclick="copyRedirectUri(this)">Copy</button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="code-block">
-          <code>${redirectUri}</code>
-          <button class="copy-btn" onclick="copyRedirectUri(this)">Copy</button>
-        </div>
-        <div class="instruction-list" style="margin-top:10px;">
           <div class="instruction-item">
             <div class="step-num">3</div>
             <div>Under <strong>APIs used</strong>, check <strong>Web API</strong> only.</div>
